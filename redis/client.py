@@ -2087,6 +2087,7 @@ class BasePipeline(object):
                     [args for args, options in commands]))
         connection.send_packed_command(all_cmds)
 
+        reset_connection = False
         response = []
         for args, options in commands:
             try:
@@ -2094,6 +2095,10 @@ class BasePipeline(object):
                     self.parse_response(connection, args[0], **options))
             except ResponseError:
                 response.append(sys.exc_info()[1])
+                reset_connection = True
+
+        if reset_connection:
+            self.connection.disconnect()
 
         if raise_on_error:
             self.raise_first_error(commands, response)
